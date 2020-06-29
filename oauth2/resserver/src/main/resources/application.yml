@@ -1,0 +1,12 @@
+server:
+   port: 83
+   
+security:
+   oauth2:
+      client:
+         clientId: resDemo
+         clientSecret: abcdefg
+      resource:
+         #jwk:
+            #keySetUri: http://localhost:82/jwt/jwk 这种是自定义解密jwt的模式
+         tokenInfoUri: http://localhost:82/oauth/check_token #这种是原生模糊解密模式

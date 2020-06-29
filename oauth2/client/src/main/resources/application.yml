@@ -1,0 +1,31 @@
+server:
+   port: 81
+spring:
+   security:
+      oauth2:
+         client:
+            provider:
+               oauth2-learning-provider:
+                  authorizationUri: http://10.1.4.49:82/oauth/authorize #auth server的授权码地址
+                  tokenUri: http://10.1.4.49:82/oauth/token #请注意 测试的时候，特别是在同一个浏览器中进行测试，auth server服务的域名和client服务的域名不能相同，
+                  #要不然会有sessionid覆盖问题,从而导致客户端的authorizationrequest取不到而报authorization_request_not_found错误
+                  userInfoUri: http://localhost:83/user/info #provider的另一个部分的配置:res server。这个地址是在资源服务器获取用户信息的地址
+                  userNameAttribute: wondersGroup #根据测试得出来的结论:这个字段会作为一个map的key，因为res server验证了access_token之后会把用户信息封装到map里面。
+                  userInfoAuthenticationMethod: header #这里有两种认证方式form或者其他(header query)
+            registration:
+               clientDemo:
+                  clientName: oauth2Client
+                  clientId: client
+                  clientSecret: abcdefg
+                  provider: oauth2-learning-provider
+                  authorizationGrantType: authorization_code
+                  clientAuthenticationMethod: basic # basic和post的区别就是:
+                  #在DefaultAuthorizationCodeTokenResponseClient.OAuth2AuthorizationCodeGrantRequestEntityConverter中,
+                  #如果是basic。那么会把clientid和clientSecret加密放入http header的authorization中。auth server会取出authorization解密后进行用户名密码认证
+                  #如果是post.那么会把clientid和clientsecretfangru http body中。同时auth server需要开启allowFormAuthenticationForClients。
+                  #然后auth server取出clientid 和clientsecret进行用户名密码验证
+                  redirectUri: http://localhost:81/endpoint/token #client中重定向端点地址，由于涉及到比对，这个地址必须要和auth server配置中的redirectUri相同               
+logging:
+   level:
+      org.springframework.web: debug
+                     
