@@ -315,4 +315,37 @@ security在SecurityContextHolder中设置了几种策略，并对他们做了支
 > Credentials 是Authentication的属性。一般情况下就是一个password。认证通过后会被清空以免泄露。
 > authorities 是authentication的属性。用来储存授予用户的权限。
 
-## 
+## GrantedAuthority
+
+ GrantedAuthority就是应用授予登录用户的各种权限。我们可以这样获取：Authentication.getAuthorities()。得到的结果是一个集合。一般情况下，集合中就是授予登录用户的角色。而我们大多数的应用中，角色和访问地址之间是一对多的关系。因此拥有角色就意味着用于该角色对应的访问地址全线。
+ 
+ 我们常的username/password登录方式。grantedauthority一般由userdetailservice加载。
+ 
+## AuthenticationManager
+ 
+AuthenticationManager接口中的authenticate方法，入参是一个带认证的Authentication对象。等到它认证通过之后，也会把Authentication作为出参返回。之后Authentication对象就会进入SecurityContext中。
+
+## providerManager
+
+ 这部分我们来看看最常用的AuthenticationManager实现-ProviderManager。ProviderManager本身维护了一个认证列表，就是实现了AuthenticationProvider接口的对象集合。在认证环节，ProviderManager会遍历这个列表，因此每一个实现了AuthenticationProvider都会尝试验证当前用户。一般会返回三种状态，验证成功，验证失败，或者交给下游AuthenticationProvider验证。
+ 
+> 如果你发现你的应用中有多个ProviderManager这并不奇怪。因为这是spring security对Providermanager进行分类的结果。每一个ProviderManager的侧重点不一样。里面的AuthenticationProvider集合也不一样。
+
+> 通常，ProviderManager之间是有层级关系的。一般他们会有一个共同的上级ProviderManager.这里就不详细分析了。
+
+## AuthenticationProvider
+
+我们在上面已经介绍过了，就不重复了。
+
+## 使用AuthenticationEntryPoint发送凭证请求 
+ 
+当客户端发送的http请求无法认证到某一个用户时。spring security会在ExceptionTranslationFilter中使用AuthenticationEntryPoint操作HttpRequest,HttpResponse。一般的AuthenticationEntryPoint实现类会重定向到某一个登录页面。或者是在响应中添加WWW-Authenticate请求头。
+ 
+## AbstractAuthenticationProcessingFilter
+
+之前，我们讲过，AbstractAuthenticationprocessingFilter是把spring security的基础组件都囊括、组织起来。使用这些组件完成一整个流程，也就是说它是实现spring security的目标：认证，授权的一个最低配(借助汽车的概念，最低配)。下面我们就来看看它是怎么工作的，先看张图:
+
+[AbstractAuthenticationProcessingFilter工作图](https://docs.spring.io/spring-security/site/docs/5.3.3.BUILD-SNAPSHOT/reference/html5/images/servlet/authentication/architecture/abstractauthenticationprocessingfilter.png)
+
+
+> 当用户提交了凭证后，AbstractAuthenticationProcessingFilter会在HttpServletRequest中创建一个Authentication对象。但是
